@@ -16,6 +16,9 @@ const io = new Server(server, {
   cors: {
     origin: [
       "http://localhost:3000",
+      "http://localhost:3001",
+      "https://estind-dashboard.vercel.app",
+      "https://estind-website.vercel.app"
       // "https://trevion.browndevs.com"
     ],
     credentials: true

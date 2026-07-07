@@ -43,8 +43,8 @@ app.use(cors({
   origin: [
     "http://localhost:3000",
     "http://localhost:3001",
-    "https://estind-dashboard.vercel.app/",
-    "https://estind-website.vercel.app/"
+    "https://estind-dashboard.vercel.app",
+    "https://estind-website.vercel.app"
     // "https://trevion.browndevs.com"
   ],
   credentials: true,
