@@ -150,10 +150,23 @@ const getServices = asyncHandler(async (req, res) => {
         .limit(limit)
         .exec();
 
+    const mappedServices = services.map((service) => {
+        const serviceObj = service.toObject();
+        if (city && mongoose.Types.ObjectId.isValid(city)) {
+            const cityPriceObj = serviceObj.cityPricing.find(
+                (cp) => (cp.city?._id || cp.city).toString() === city.toString()
+            );
+            serviceObj.resolvedPrice = cityPriceObj ? cityPriceObj.price : serviceObj.basePrice;
+        } else {
+            serviceObj.resolvedPrice = serviceObj.basePrice;
+        }
+        return serviceObj;
+    });
+
     const hasMore = totalCount > skip + services.length;
 
     return res.status(200).json(
-        new ApiResponse(200, { services, pagination: { page: pageNum, limit, totalCount, hasMore } }, "Services fetched successfully")
+        new ApiResponse(200, { services: mappedServices, pagination: { page: pageNum, limit, totalCount, hasMore } }, "Services fetched successfully")
     );
 });
 

@@ -21,7 +21,9 @@ const io = new Server(server, {
       "https://estind-website.vercel.app"
       // "https://trevion.browndevs.com"
     ],
-    credentials: true
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
   }
 });
 
