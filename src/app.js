@@ -23,6 +23,8 @@ import projectRouter from './routes/project.routes.js'
 import propertyRouter from './routes/property.routes.js'
 import groupRouter from './routes/group.routes.js'
 import enquiryRouter from './routes/enquiry.routes.js'
+import companyDetailsRouter from './routes/companyDetails.routes.js'
+import dashboardRouter from './routes/dashboard.routes.js'
 
 // import "./jobs/keepAlive.cron.js";
 
@@ -78,6 +80,8 @@ app.use("/api/v1/projects", projectRouter)
 app.use("/api/v1/properties", propertyRouter)
 app.use("/api/v1/groups", groupRouter)
 app.use("/api/v1/enquiries", enquiryRouter)
+app.use("/api/v1/company-details", companyDetailsRouter)
+app.use("/api/v1/dashboard", dashboardRouter)
 
 // --- Global error handler ---
 app.use((err, req, res, next) => {

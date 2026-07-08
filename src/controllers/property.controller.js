@@ -77,9 +77,17 @@ const getAllProperties = asyncHandler(async (req, res) => {
     // String matches
     if (listingType) filter.listingType = listingType;
     if (sectorType) filter.sectorType = sectorType;
-    if (propertyType) filter.propertyType = propertyType;
-    if (furnishingStatus) filter.furnishingStatus = furnishingStatus;
     if (bookingStatus) filter.bookingStatus = bookingStatus;
+    
+    if (propertyType) {
+        if (typeof propertyType === "string" && propertyType.includes(",")) {
+            filter.propertyType = { $in: propertyType.split(",").map(s => s.trim()) };
+        } else {
+            filter.propertyType = propertyType;
+        }
+    }
+    
+    if (furnishingStatus) filter.furnishingStatus = furnishingStatus;
     
     if (active !== undefined) {
         filter.active = active === "true";
@@ -98,7 +106,11 @@ const getAllProperties = asyncHandler(async (req, res) => {
 
     // Number parameters
     if (bhk) {
-        filter.bhk = parseInt(bhk, 10);
+        if (typeof bhk === "string" && bhk.includes(",")) {
+            filter.bhk = { $in: bhk.split(",").map(v => parseInt(v.trim(), 10)) };
+        } else {
+            filter.bhk = parseInt(bhk, 10);
+        }
     }
 
     // Budget Price boundaries
