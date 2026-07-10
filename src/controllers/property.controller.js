@@ -97,8 +97,12 @@ const getAllProperties = asyncHandler(async (req, res) => {
     if (city && mongoose.Types.ObjectId.isValid(city)) {
         filter.city = city;
     }
-    if (locality && mongoose.Types.ObjectId.isValid(locality)) {
-        filter.locality = locality;
+    if (locality) {
+        if (typeof locality === "string" && locality.includes(",")) {
+            filter.locality = { $in: locality.split(",").filter(id => mongoose.Types.ObjectId.isValid(id.trim())).map(id => id.trim()) };
+        } else if (mongoose.Types.ObjectId.isValid(locality)) {
+            filter.locality = locality;
+        }
     }
     if (project && mongoose.Types.ObjectId.isValid(project)) {
         filter.project = project;
