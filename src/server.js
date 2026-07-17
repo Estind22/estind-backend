@@ -18,7 +18,9 @@ const io = new Server(server, {
       "http://localhost:3000",
       "http://localhost:3001",
       "https://estind-dashboard.vercel.app",
-      "https://estind-website.vercel.app"
+      "https://estind-website.vercel.app",
+      "https://www.estind.com",
+      "https://estind.com"
       // "https://trevion.browndevs.com"
     ],
     credentials: true,
