@@ -3,6 +3,8 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import mongoose from "mongoose";
+import jwt from "jsonwebtoken";
+
 
 // @desc    Create a new Property
 // @route   POST /api/v1/properties
@@ -66,7 +68,7 @@ const getAllProperties = asyncHandler(async (req, res) => {
     const {
         city, locality, project, listingType, sectorType, propertyType,
         minPrice, maxPrice, bhk, furnishingStatus, search, bookingStatus,
-        page = 1, limit = 10, active
+        page = 1, limit = 10, active, status
     } = req.query;
 
     const filter = {};
@@ -91,6 +93,37 @@ const getAllProperties = asyncHandler(async (req, res) => {
     
     if (active !== undefined) {
         filter.active = active === "true";
+    }
+
+    // Check if request is authenticated as an admin/user (not customer)
+    let isAdmin = false;
+    try {
+        const authHeader = req.headers.authorization || req.headers.Authorization;
+        let token = null;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        }
+        if (!token && req.cookies) {
+            token = req.cookies.accessToken;
+        }
+        if (token) {
+            const payload = jwt.verify(token, process.env.JWT_SECRET || "YourSecretKey");
+            if (payload && payload.id) {
+                isAdmin = true;
+            }
+        }
+    } catch (e) {
+        // Not a valid admin token
+    }
+
+    if (status) {
+        if (status !== "All") {
+            filter.status = status;
+        }
+    } else {
+        if (!isAdmin) {
+            filter.status = "Approved";
+        }
     }
 
     // References
@@ -253,10 +286,77 @@ const deleteProperty = asyncHandler(async (req, res) => {
     );
 });
 
+// @desc    Register a new Property by normal user (customer)
+// @route   POST /api/v1/properties/public-register
+// @access  Private (Customer)
+const createPublicProperty = asyncHandler(async (req, res) => {
+    const {
+        title, city, locality, project, listingType, sectorType, propertyType,
+        price, tokenAmount, deposit, bhk, bathrooms, floor, furnishingStatus,
+        areaValue, areaUnit, facing, parking, description, amenities, images
+    } = req.body;
+
+    if (!title || !city || !locality || !listingType || !sectorType || !propertyType || !price || !areaValue) {
+        throw new ApiError(400, "All primary details (title, city, locality, listingType, sectorType, propertyType, price, and area dimensions) are required");
+    }
+
+    if (!req.customer) {
+        throw new ApiError(401, "Customer authentication required");
+    }
+
+    // Auto-generate slug from title
+    const baseSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+
+    const property = await Property.create({
+        title,
+        slug: baseSlug,
+        city,
+        locality,
+        project: project ? project : null,
+        keyman: null,
+        listingType,
+        sectorType,
+        propertyType,
+        price,
+        tokenAmount: tokenAmount || 0,
+        deposit: deposit || "",
+        bhk: bhk || null,
+        bathrooms: bathrooms || null,
+        floor: floor || null,
+        furnishingStatus: furnishingStatus || "",
+        areaValue,
+        areaUnit,
+        facing: facing || "",
+        parking: parking || 0,
+        bookingStatus: "Available",
+        active: false, // Inactive until approved
+        status: "Pending", // Needs admin approval
+        postedBy: "User",
+        ownerDetails: {
+            name: req.customer.name,
+            phone: req.customer.phone
+        },
+        description: description || "",
+        amenities: amenities || [],
+        images: images || []
+    });
+
+    await property.populate([
+        { path: "city", select: "name slug" },
+        { path: "locality", select: "name slug" },
+        { path: "project", select: "name developer" }
+    ]);
+
+    return res.status(201).json(
+        new ApiResponse(201, property, "Property registered and submitted for approval successfully")
+    );
+});
+
 export {
     createProperty,
     getAllProperties,
     getPropertyDetails,
     updateProperty,
-    deleteProperty
+    deleteProperty,
+    createPublicProperty
 };

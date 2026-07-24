@@ -150,6 +150,22 @@ const propertySchema = new mongoose.Schema(
             type: [String],
             default: [],
         },
+        status: {
+            type: String,
+            enum: ["Pending", "Approved", "Rejected"],
+            default: "Approved",
+            index: true,
+        },
+        postedBy: {
+            type: String,
+            enum: ["Admin", "User"],
+            default: "Admin",
+            index: true,
+        },
+        ownerDetails: {
+            name: { type: String, default: "" },
+            phone: { type: String, default: "" },
+        },
     },
     { timestamps: true }
 );

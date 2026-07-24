@@ -1,11 +1,12 @@
 import { Router } from "express";
-import { authenticate } from "../middlewares/auth.middleware.js";
+import { authenticate, authenticateCustomer } from "../middlewares/auth.middleware.js";
 import {
     createProperty,
     getAllProperties,
     getPropertyDetails,
     updateProperty,
-    deleteProperty
+    deleteProperty,
+    createPublicProperty
 } from "../controllers/property.controller.js";
 
 const router = Router();
@@ -13,6 +14,9 @@ const router = Router();
 // Public routes
 router.get("/", getAllProperties);
 router.get("/:key", getPropertyDetails);
+
+// Customer protected route
+router.post("/public-register", authenticateCustomer, createPublicProperty);
 
 // Admin protected routes
 router.post("/", authenticate, createProperty);
